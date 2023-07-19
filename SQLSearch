@@ -1,0 +1,173 @@
+Searching for some Data
+--OPERATIVO
+--1
+--nálisis de docentes por camada/ comisión: 
+--Número de documento de identidad, nombre del docente y camada,
+--para identificar la camada mayor y la menor según el número de la  camada. 
+--Opción profe
+Select Documento, Nombre, Camada, 'Mayor' As Orden From Staff
+Where Right(Camada,5) = (Select Max(Right(Camada,5)) From Staff)
+Union
+Select Documento, Nombre, Camada, 'Menor' As Orden From Staff
+Where Right(Camada,5) = (Select Min(Right(Camada,5)) From Staff)
+
+--Opción mía
+Select Documento, Nombre, Camada From Staff
+Where Right(Camada,5) = (Select Max(Right(Camada,5)) From Staff)
+Or Right(Camada,5) = (Select Min(Right(Camada,5)) From Staff)
+And Month([Fecha Ingreso]) = 05 And Year([Fecha Ingreso]) = 2021
+
+--2
+--Por medio de la fecha de ingreso de los estudiantes identificar: cantidad total de estudiantes.
+--Mostrar los periodos de tiempo separados por año, mes y día, 
+--y presentar la información ordenada por la fecha que más ingresaron estudiantes.
+
+SELECT YEAR ([Fecha Ingreso]) Año, MONTH ([Fecha Ingreso]) Mes, DAY ([Fecha Ingreso]) Dia,
+Count([Fecha Ingreso]) As Cant
+FROM Estudiantes
+Group by [Fecha Ingreso]
+Order by Cant Desc
+
+--3
+--Identificar el top 10 de los encargados que tiene más docentes a cargo,
+--filtrar solo los que tienen a cargo docentes. 
+--Ordenar de mayor a menor para poder tener el listado correctamente.
+
+Select Top 10 Encargado_ID, Count(DocentesID) DocentesACargo From Encargado e
+Join Staff s
+On e.Encargado_ID = s.Encargado
+Where e.NuevoTipo Like '%Docente%'
+Group by e.Encargado_ID
+Order by DocentesACargo desc
+
+--4
+--Análisis de profesiones con más estudiantes: 
+--Identificar la profesión y la cantidad de estudiantes que ejercen,
+--mostrar el listado solo de las profesiones que tienen más de 5 estudiantes.
+--Ordenar de mayor a menor por la profesión que tenga más estudiantes.
+
+Select Profesiones, Count(EstudiantesID) As CantEst From Profesiones pro
+Join Estudiantes es
+On es.Profesion = pro.Profesiones
+Group by Profesiones
+Having Count(EstudiantesID) > 5
+
+--5
+--Análisis de estudiantes por área de educación: 
+--Identificar: nombre del área, si la asignatura es carrera o curso , a qué jornada pertenece,
+--cantidad de estudiantes y monto total del costo de la asignatura. 
+--Ordenar el informe de mayor a menor por monto de costos total,
+--tener en cuenta los docentes que no tienen asignaturas ni estudiantes asignados, también sumarlos.
+
+Select ar.Nombre As NombreArea, asi.Tipo, asi.Jornada, Count(EstudiantesID) As CantEstudiantes, Sum(Costo) As CostoTotal From Asignaturas asi
+Join Area ar On asi.Area=ar.AreaID
+Join Staff st On st.Asignatura=asi.AsignaturasID
+Join Estudiantes es On es.Docente=st.DocentesID
+Group by ar.Nombre, asi.Tipo, asi.Jornada
+Order by Sum(Costo)
+
+----------------------------------------------------------------------------------------------------------------
+--TACTICO
+--1
+--Análisis mensual de estudiantes por área: 
+--Identificar para cada área: el año y el mes (concatenados en formato YYYYMM), 
+--cantidad de estudiantes y monto total de las asignaturas. 
+--Ordenar por mes del más actual al más antiguo y por cantidad de clientes de mayor a menor.
+
+Select ar.Nombre As NombreArea, CONCAT(YEAR(es.[Fecha Ingreso]), MONTH(es.[Fecha Ingreso]),'') As AnoMes,
+	   Count(es.EstudiantesID) As CantEst, Sum(asi.Costo) As MontoTotal
+From Estudiantes es
+	Join Staff st on es.Docente=st.DocentesID
+	Join Asignaturas asi on st.Asignatura=asi.AsignaturasID
+	Join Area ar on asi.Area=ar.AreaID
+Group by ar.Nombre, CONCAT(YEAR(es.[Fecha Ingreso]), MONTH(es.[Fecha Ingreso]),'')
+ORDER BY CONCAT(YEAR(es.[Fecha Ingreso]), MONTH(es.[Fecha Ingreso]),'') Desc,
+         Count(EstudiantesID) Desc
+
+--2
+--Análisis encargado tutores jornada noche: 
+--Identificar el nombre del encargado, el documento de identidad, 
+--el número de la camada (solo el número) y la fecha de ingreso del tutor.
+--Ordenar por camada de forma mayor a menor.
+
+Select en.Nombre, en.Documento, Right(st.Camada, 5) As NumCamada, st.[Fecha Ingreso], en.NuevoTipo, asi.Jornada
+From Encargado en
+Join Staff st on en.Encargado_ID=st.Encargado
+Join Asignaturas asi on st.Asignatura=asi.AsignaturasID  
+Where asi.Jornada = 'Noche'
+And en.NuevoTipo = 'Tutores  '
+Order by st.Camada Desc
+
+Select * From Staff
+Select * From Encargado
+--3
+--Análisis asignaturas sin docentes o tutores: 
+--Identificar el tipo de asignatura, la jornada, la cantidad de áreas únicas y
+--la cantidad total de asignaturas que no tienen asignadas docentes o tutores.
+--Ordenar por tipo de forma descendente
+
+Select asi.Tipo, asi.Jornada From Asignaturas asi
+Join Staff st on asi.AsignaturasID = st.Apellido
+Join Area ar on ar.AreaID = asi.Area
+Where asi.AsignaturasID 
+Order by asi.Tipo Desc
+
+Select * From Asignaturas
+
+--4
+--Análisis asignaturas mayor al promedio: 
+--Identificar el nombre de la asignatura, el costo de la asignatura y
+--el promedio del costo de las asignaturas por área. 
+--Una vez obtenido el dato, del promedio
+--se debe visualizar solo las carreras que se encuentran por encima del promedio. 
+
+Select  asi.Area, asi.Nombre, asi.Costo, AVG(asi.Costo) As Promedio From Asignaturas asi
+Where asi.Tipo Like '%Carrera%'
+Group by asi.Area, asi.Nombre, asi.Tipo
+Having asi.Costo > AVG(asi.Costo)
+Order by asi.Area
+
+--5
+--Análisis aumento de salario docente: 
+--Identificar el nombre, documento de identidad, el área, la asignatura y el aumento del salario del docente,
+--este último calcularlo sacándole un porcentaje al costo de la asignatura,
+--todas las áreas tienen un porcentaje distinto,
+--Marketing-17%, Diseño-20%, Programación-23%, Producto-13%, Data-15%, Herramientas 8%
+
+Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.17)-asi.Costo) As Aumento
+From Staff st
+Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
+Join Area ar on ar.AreaID = asi.Area
+Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Marketing%')
+Union
+Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.2)-asi.Costo) As Aumento
+From Staff st
+Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
+Join Area ar on ar.AreaID = asi.Area
+Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Diseño%')
+Union
+Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.23)-asi.Costo) As Aumento
+From Staff st
+Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
+Join Area ar on ar.AreaID = asi.Area
+Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Programacion%')
+Union
+Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.13)-asi.Costo) As Aumento
+From Staff st
+Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
+Join Area ar on ar.AreaID = asi.Area
+Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Producto%')
+Union
+Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.15)-asi.Costo) As Aumento
+From Staff st
+Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
+Join Area ar on ar.AreaID = asi.Area
+Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Data%')
+Union
+Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.08)-asi.Costo) As Aumento
+From Staff st
+Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
+Join Area ar on ar.AreaID = asi.Area
+Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Herramientas%')
+
+Select * From Area
