@@ -1,21 +1,15 @@
-Searching for some Data
---OPERATIVO
+--Using a Personal Database with 6 relational tables ('Areas', 'Asignaturas', 'Encargado', 'Estudiantes', 'Profesiones', 'Staff')
+--Searching for some Data Insights
+--OPERATIVE LEVEL
 --1
---nálisis de docentes por camada/ comisión: 
---Número de documento de identidad, nombre del docente y camada,
---para identificar la camada mayor y la menor según el número de la  camada. 
---Opción profe
+--Analysis of teachers by class/group:
+--Identification number, teacher's name, and class/group name, to identify the highest and lowest class/group based on the class/group number.
+
 Select Documento, Nombre, Camada, 'Mayor' As Orden From Staff
 Where Right(Camada,5) = (Select Max(Right(Camada,5)) From Staff)
 Union
 Select Documento, Nombre, Camada, 'Menor' As Orden From Staff
 Where Right(Camada,5) = (Select Min(Right(Camada,5)) From Staff)
-
---Opción mía
-Select Documento, Nombre, Camada From Staff
-Where Right(Camada,5) = (Select Max(Right(Camada,5)) From Staff)
-Or Right(Camada,5) = (Select Min(Right(Camada,5)) From Staff)
-And Month([Fecha Ingreso]) = 05 And Year([Fecha Ingreso]) = 2021
 
 --2
 --Por medio de la fecha de ingreso de los estudiantes identificar: cantidad total de estudiantes.
