@@ -1,65 +1,49 @@
 /*
-Actividad N°1:
-Indicar cuántos cursos y carreras  
-tiene el área de Data.
-Renombrar la nueva columna como cant_asignaturas.
-Keywords: Tipo, Área, Asignaturas.
+Activity #1:
+Indicate how many courses and degrees
+the Data area has.
+Rename the new column as cant_subjects..
 */
-
---Conociendo las tablas
-Select * from Area;
-
-Select * from Asignaturas;
 
 Select Tipo, COUNT(Tipo) As cant_asignaturas
 From Asignaturas
 Where Area = (Select AreaID From Area Where Nombre = 'Data')
 Group by Tipo;
 
-/*Actividad N°2:
-Se requiere saber cual es el nombre, el documento de identidad y el teléfono
-de los estudiantes
-que son profesionales en agronomía
-y que nacieron entre el año 1970 y el año 2000.
-Keywords: Estudiantes, Profesión, Fecha de Nacimiento
+/*
+Activity #2:
+We need to know the name, identification document, and phone number
+of students
+who are professionals in agronomy
+and were born between the year 1970 and the year 2000.
 */
-
---Conociendo las tablas
-Select* from Profesiones
-Select* from Estudiantes
 
 Select Nombre, Documento, Telefono From Estudiantes
 Where Profesion = (Select ProfesionesID From Profesiones Where Profesiones = 'Agronomo Agronoma') 
 And YEAR([Fecha de Nacimiento]) Between 1970 And 2000;
 
-/*Actividad N°3:
-Se requiere un listado de
-los docentes que ingresaron en el año 2021 y
-concatenar los campos nombre y apellido.
-El resultado debe utilizar un separador: guión (-). Ejemplo: Elba-Jimenez.
-Renombrar la nueva columna como Nombres_Apellidos.
-Los resultados de la nueva columna deben estar en mayúsculas.
-Keywords: Staff, Fecha Ingreso, Nombre, Apellido.
+/*
+Activity #3:
+We need a list of
+teachers who were admitted in the year 2021,
+and concatenate the fields for first name and last name.
+The result should use a separator: hyphen (-). Example: Elba-Jimenez.
+Rename the new column as Full_Name.
+The results in the new column should be in uppercase.
 */
-
---Conociendo las tablas
-Select* from staff
 
 SELECT CONCAT(Upper(Nombre), '-', Upper(Apellido)) AS Nombres_Apellidos
 	FROM Staff
 	WHERE YEAR([Fecha Ingreso]) = 2021
 
 
-/*Actividad N°4:
-Indicar la cantidad de encargados de docentes y de tutores.
-Renombrar la columna como CantEncargados.
-Quitar la palabra ”Encargado ”en cada uno de los registros.
-Renombrar la columna como NuevoTipo.
-Keywords: Encargado, tipo, Encargado_ID.
+/*
+Activity #4:
+Indicate the number of supervisors of teachers and tutors.
+Rename the column as CantSupervisors.
+Remove the word "Supervisor" from each of the records.
+Rename the column as NewType.
 */
-
---Conociendo las tablas
-Select * from encargado
 
 Exec sp_rename 'Encargado.Tipo', 'NuevoTipo';
 
@@ -70,80 +54,67 @@ Where NuevoTipo Like 'Encargado%'
 Select NuevoTipo, Count(NuevoTipo) From Encargado
 Group by NuevoTipo
 
-/*Actividad N°5:
-Indicar cuál es el precio promedio de
-las carreras y los cursos
-por jornada.
-Renombrar la nueva columna como Promedio.
-Ordenar los promedios de Mayor a menor
-Keywords: Tipo, Jornada, Asignaturas.
+/*
+Activity #5:
+Indicate the average price of
+degrees and courses
+per schedule.
+Rename the new column as Average.
+Sort the averages from highest to lowest.
 */
-
-Select * From Asignaturas
 
 Select Jornada, Round(AVG(Costo), 2) As Promedio From Asignaturas
 Group by Jornada
 Order by Promedio Desc
 
-/*Actividad N°6:
-Se requiere calcular la edad de los estudiantes en una nueva columna.
-Renombrar a la nueva columna Edad.
-Filtrar solo los que son mayores de 18 años.
-Ordenar de Menor a Mayor Keywords: Fecha de Nacimiento, Estudiantes.
+/*
+Activity #6:
+We need to calculate the age of the students in a new column.
+Rename the new column as Age.
+Filter only those who are older than 18 years.
+Sort the data from the youngest to the oldest.
 */
-
-Select * from Estudiantes
 
 Select *, Datediff(year, [Fecha de Nacimiento], Getdate()) As Edad
 From Estudiantes
 Where Datediff(year, [Fecha de Nacimiento], Getdate()) >= 18
 Order by Edad
 
-
-/*Actividad N°7:
-Se requiere saber el Nombre,el correo, la camada y la fecha de ingreso de personas del staff
-que contienen correo .edu y
-su DocenteID se mayor o igual que 100
-Keywords: Staff, correo, DocentesID
+/*
+Activity #7:
+We need to know the Name, Email, Batch, and Admission Date of staff members
+who have a .edu email and
+their TeacherID is greater than or equal to 100.
 */
 
 Select Nombre, Correo, Camada, [Fecha Ingreso] From Staff
 Where (Correo like '%edu') And DocentesID  >= 100
 
-/*Actividad N°8:
-Se requiere conocer el documento, el domicilio, el código postal y el nombre de
-los primeros estudiantes que se registraron en la plataforma.
-Keywords: Documento, Estudiantes, Fecha Ingreso
+/*
+Activity #8:
+We need to know the ID, Address, Postal Code, and Name of
+the first students who registered on the platform.
 */
 
 Select Top(10) Documento, Domicilio, [Codigo Postal], Nombre From Estudiantes
 
-/*Actividad N°9:
-Indicar el nombre, apellido y documento de identidad de
-los docentes y tutores que
-tienen asignaturas “UX” .
-Keywords: Staff, Asignaturas, Nombre, Apellido.
+/*
+Activity #9:
+Indicate the first name, last name, and identification document of
+teachers and tutors who
+have subjects with the name "UX".
 */
-
-Select * From Staff
-Select * from Asignaturas
 
 Select Nombre, Apellido, Documento From Staff
 Where Asignatura IN (Select AsignaturasID From Asignaturas Where Nombre Like '%UX%')
 
-/*Actividad N°10:
-Se desea calcular el 25% de aumento
-para las asignaturas del área de marketing
-de la jornada mañana
-se deben traer todos los campos, 
-mas el de los cálculos correspondientes
-el porcentaje y el Nuevo costo debe estar en decimal con 3 digitos.
-Renombrar el calculo del porcentaje con el nombre porcentaje
-y la suma del costo mas el porcentaje por NuevoCosto.
-Keywords: Asignaturas, Costo, Área, Jornada, Nombre
+/*
+Activity #10:
+We want to calculate a 25% increase for the subjects in the marketing area that are taught in the morning schedule.
+We need to retrieve all fields,
+plus the corresponding calculations for the percentage and the new cost, which should be displayed with 3 decimal places.
+Rename the percentage calculation as "percentage" and the sum of the cost plus the percentage as "NuevoCosto".
 */
-
-Select * From Area
 
 Select *, Round(Costo * 25/100, 3) As Porcetaje, Round(Costo * 125/100, 3) As NuevoCosto From Asignaturas
 Where Jornada = 'Manana' And Area = (Select AreaID From Area Where Nombre Like '%Marketing%' ) ;
