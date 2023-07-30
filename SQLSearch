@@ -99,11 +99,12 @@ Order by st.Camada Desc
 --and the total count of subjects that do not have assigned teachers or tutors.
 --Sort them by type in descending order.
 
-Select asi.Tipo, asi.Jornada From Asignaturas asi
-Join Staff st on asi.AsignaturasID = st.Apellido
-Join Area ar on ar.AreaID = asi.Area
-Where asi.AsignaturasID 
-Order by asi.Tipo Desc
+Select asi.Tipo, asi.Jornada, count(distinct asi.area) as cantareas,
+	count(asi.nombre) as cantasi From Asignaturas asi
+	left Join Staff on staff.asignatura = asi.AsignaturasID
+Where DocentesID iS NULL
+Group by asi.Tipo, asi.Jornada
+Order by asi.Tipo ASC
 
 --4
 --Analysis of subjects above average cost:
@@ -112,11 +113,15 @@ Order by asi.Tipo Desc
 --Once the average is obtained,
 --only display the degrees that are above the average. 
 
-Select  asi.Area, asi.Nombre, asi.Costo, AVG(asi.Costo) As Promedio From Asignaturas asi
-Where asi.Tipo Like '%Carrera%'
-Group by asi.Area, asi.Nombre, asi.Tipo
-Having asi.Costo > AVG(asi.Costo)
-Order by asi.Area
+WITH CostoPromedioPorArea AS (
+    SELECT Nombre, Area, AVG(Costo) AS PromedioCosto
+    FROM asignaturas
+    GROUP BY Area, Nombre
+)
+SELECT a.Nombre, a.Costo, cpa.PromedioCosto
+FROM asignaturas a
+JOIN CostoPromedioPorArea cpa ON a.Nombre = cpa.Nombre AND a.Area = cpa.Area
+WHERE a.Costo > cpa.PromedioCosto;
 
 --5
 
@@ -125,40 +130,48 @@ Order by asi.Area
 --Calculate the salary increase by subtracting a percentage from the cost of the subject.
 --Each area has a different percentage: Marketing-17%, Diseño-20%, Programación-23%, Producto-13%, Data-15%, Herramientas 8%
 
-Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.17)-asi.Costo) As Aumento
-From Staff st
-Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
-Join Area ar on ar.AreaID = asi.Area
-Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Marketing%')
-Union
-Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.2)-asi.Costo) As Aumento
-From Staff st
-Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
-Join Area ar on ar.AreaID = asi.Area
-Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Diseño%')
-Union
-Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.23)-asi.Costo) As Aumento
-From Staff st
-Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
-Join Area ar on ar.AreaID = asi.Area
-Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Programacion%')
-Union
-Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.13)-asi.Costo) As Aumento
-From Staff st
-Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
-Join Area ar on ar.AreaID = asi.Area
-Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Producto%')
-Union
-Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.15)-asi.Costo) As Aumento
-From Staff st
-Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
-Join Area ar on ar.AreaID = asi.Area
-Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Data%')
-Union
-Select st.Nombre, st.Documento, ar.Nombre, asi.Nombre, ((asi.Costo*1.08)-asi.Costo) As Aumento
-From Staff st
-Join Asignaturas asi on asi.AsignaturasID = st.Asignatura
-Join Area ar on ar.AreaID = asi.Area
-Where ar.AreaID = (Select Area.AreaID From Area Where Area.Nombre Like '%Herramientas%')
+Select sta.Nombre, sta.Documento, Area.Nombre, Asi.Nombre, (Costo*1.17-Costo) as Aumento 
+From Staff sta
+Join Asignaturas asi on asi.asignaturasID = Sta.Asignatura
+Join Area on area.areaID = Asi.Area
+Where Area.Nombre Like '%Marketing%'
 
-Select * From Area
+UNION
+
+Select sta.Nombre, sta.Documento, Area.Nombre, Asi.Nombre, (Costo*1.2-Costo) as Aumento 
+From Staff sta
+Join Asignaturas asi on asi.asignaturasID = Sta.Asignatura
+Join Area on area.areaID = Asi.Area
+Where Area.Nombre Like '%Diseno%'
+
+UNION
+
+Select sta.Nombre, sta.Documento, Area.Nombre, Asi.Nombre, (Costo*1.23-Costo) as Aumento 
+From Staff sta
+Join Asignaturas asi on asi.asignaturasID = Sta.Asignatura
+Join Area on area.areaID = Asi.Area
+Where Area.Nombre Like '%Programacion%'
+
+UNION
+
+Select sta.Nombre, sta.Documento, Area.Nombre, Asi.Nombre, (Costo*1.13-Costo) as Aumento 
+From Staff sta
+Join Asignaturas asi on asi.asignaturasID = Sta.Asignatura
+Join Area on area.areaID = Asi.Area
+Where Area.Nombre Like '%Producto%'
+
+UNION
+
+Select sta.Nombre, sta.Documento, Area.Nombre, Asi.Nombre, (Costo*1.15-Costo) as Aumento 
+From Staff sta
+Join Asignaturas asi on asi.asignaturasID = Sta.Asignatura
+Join Area on area.areaID = Asi.Area
+Where Area.Nombre Like '%Data%'
+
+UNION
+
+Select sta.Nombre, sta.Documento, Area.Nombre, Asi.Nombre, (Costo*1.08-Costo) as Aumento 
+From Staff sta
+Join Asignaturas asi on asi.asignaturasID = Sta.Asignatura
+Join Area on area.areaID = Asi.Area
+Where Area.Nombre Like '%Herramientas%'
