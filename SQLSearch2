@@ -2,7 +2,7 @@
 Activity #1:
 Indicate how many courses and degrees
 the Data area has.
-Rename the new column as cant_subjects..
+Rename the new column as cant_asignaturas.
 */
 
 Select Tipo, COUNT(Tipo) As cant_asignaturas
@@ -28,7 +28,7 @@ We need a list of
 teachers who were admitted in the year 2021,
 and concatenate the fields for first name and last name.
 The result should use a separator: hyphen (-). Example: Elba-Jimenez.
-Rename the new column as Full_Name.
+Rename the new column as Nombes_Apellidos.
 The results in the new column should be in uppercase.
 */
 
@@ -41,8 +41,8 @@ SELECT CONCAT(Upper(Nombre), '-', Upper(Apellido)) AS Nombres_Apellidos
 Activity #4:
 Indicate the number of supervisors of teachers and tutors.
 Rename the column as CantSupervisors.
-Remove the word "Supervisor" from each of the records.
-Rename the column as NewType.
+Remove the word "Encargado" from each of the records.
+Rename the column as NuevoTipo.
 */
 
 Exec sp_rename 'Encargado.Tipo', 'NuevoTipo';
@@ -59,7 +59,7 @@ Activity #5:
 Indicate the average price of
 degrees and courses
 per schedule.
-Rename the new column as Average.
+Rename the new column as Promedio.
 Sort the averages from highest to lowest.
 */
 
@@ -70,7 +70,7 @@ Order by Promedio Desc
 /*
 Activity #6:
 We need to calculate the age of the students in a new column.
-Rename the new column as Age.
+Rename the new column as Edad.
 Filter only those who are older than 18 years.
 Sort the data from the youngest to the oldest.
 */
